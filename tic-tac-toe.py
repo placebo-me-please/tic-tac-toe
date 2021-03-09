@@ -33,6 +33,59 @@ def player_input():
 		elif selection_status == False:
 			pass
 
+def check_full(grid_selection):
+	#this variable represents how many symbols have been placed
+	symbol_count = 0
+	
+	#this control flow checks to see if every cell is occupied with a value
+	for grid_space in grid_selection:
+		if grid_space == "X" or grid_space == "O":
+			symbol_count += 1
+		elif grid_space == " ":
+			return False
+
+		if symbol_count == 9:
+			return True
+
+def check_win(grid_selection):
+	#this is the dictionary of possible win conditions
+	win_cons = {
+	1 : ['*','*','*',' ',' ',' ',' ',' ',' '],
+	2 : [' ',' ',' ','*','*','*',' ',' ',' '],
+	3 : [' ',' ',' ',' ',' ',' ','*','*','*'],
+	4 : ['*',' ',' ','*',' ',' ','*',' ',' '],
+	5 : [' ','*',' ',' ','*',' ',' ','*',' '],
+	6 : [' ',' ','*',' ',' ','*',' ',' ','*'],
+	7 : ['*',' ',' ',' ','*',' ',' ',' ','*'],
+	8 : [' ',' ','*',' ','*',' ','*',' ',' ']
+	}
+
+	#empty arrays that will individually represent a player
+	#these will form patters that can be compared to the win_con dictionary
+	grid_space_X = []
+	grid_space_O = []
+	grid_space_index = 0
+
+	#this builds the arrays of patterns that will be checked against the win_con dictionary
+	#an asterisk represents an arbitary symbol so that pattern matching is simpler
+	for grid_space in grid_selection:
+		if grid_space == 'X':
+			grid_space_X.append('*')
+		elif grid_space == 'O':
+			grid_space_O.append('*')
+		elif grid_space == ' ':
+			grid_space_X.append(' ')
+			grid_space_O.append(' ') 
+
+		grid_space_index += 1
+
+	#this control flow is responsible for checking the 'X' and 'Y' patterns against the win_con dictionary
+	for key in win_cons:
+		if win_cons[key] == grid_space_X:
+			print('player X wins')
+		elif win_cons[key] == grid_space_O:
+			print('player O wins')
+
 def validate_selection(player_selection):
 	#validation statuses are assumed to be False unless proven to be true
 	validation_status = [False, False]
@@ -59,16 +112,24 @@ def validate_selection(player_selection):
 		return True
 
 #TESTING
+#this test should exercise the code's ability to assess whether or not a player's symbols match any win-condition patterns
+grid_selection = ['X','X','X',' ',' ',' ',' ',' ',' ']
+check_win(grid_selection)
+grid_selection = ['O',' ',' ',' ','O',' ',' ',' ','O']
+check_win(grid_selection)
+
+
 #this test should exercise the ability of the code to assess whether or not the board is fully populated
 #expected output here is False
-grid_selection = [' ',' ',' ',' ',' ',' ',' ',' ',' ']
-check_empty(grid_selection)
-#expected output here is True
-grid_selection = ['X','X','X','X','X','X','X','X','X']
-check_empty(grid_selection)
+# grid_selection = [' ',' ',' ',' ',' ',' ',' ',' ',' ']
+# check_full(grid_selection)
+# #expected outputs here are True
+# grid_selection = ['X','X','X','X','O','X','X','X','X']
+# check_full(grid_selection)
+# grid_selection = ['X','X','X','X','X','X','X','X','X']
+# check_full(grid_selection)
 
-
-#this should populate an "X" in whatever space the user selected on the grid
+# this should populate an "X" in whatever space the user selected on the grid
 # grid_selection = [' ',' ',' ',' ',' ',' ',' ',' ',' ']
 # place_symbol(grid_selection)
 

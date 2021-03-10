@@ -1,8 +1,23 @@
-#import os
-#os.system('clear')
+#clear the command line
+import os
+os.system('clear')
 
+#========================================================================================================
+#initialization
+#========================================================================================================
+#import functions
+from random import randint		#built-in random integer generator
+import time
+
+#initialize grid variables
+grid_demo = ['1','2','3','4','5','6','7','8','9']
+grid_selection = [' ',' ',' ',' ',' ',' ',' ',' ',' ']
+
+#========================================================================================================
+#functions
+#========================================================================================================
 def print_board(grid_selection):
-	print(f'\
+	print(f'\n \
 		   |   |   \n\
 		 {grid_selection[6]} | {grid_selection[7]} | {grid_selection[8]} \n\
 		___|___|___\n\
@@ -17,6 +32,16 @@ def place_symbol(grid_selection):
 	player_selection = player_input()
 	grid_selection[player_selection - 1] = "X"
 	print_board(grid_selection)
+
+def player_selector():
+	#this randomly produces a number in the range [1,20]
+	dice_roll = randint(1, 20)
+	
+	#this checks if the roll is high or low
+	if dice_roll < 11:
+		return 1
+	elif dice_roll > 10:
+		return 2 
 
 def player_input():
 	#selection status is assumed to be false unless the validation function passes the user selection
@@ -49,6 +74,7 @@ def check_full(grid_selection):
 
 def check_win(grid_selection):
 	#this is the dictionary of possible win conditions
+	#future consideration is to re-write this as a tuple so that it is treated as immutable
 	win_cons = {
 	1 : ['*','*','*',' ',' ',' ',' ',' ',' '],
 	2 : [' ',' ',' ','*','*','*',' ',' ',' '],
@@ -83,11 +109,15 @@ def check_win(grid_selection):
 	for key in win_cons:
 		if win_cons[key] == grid_space_X:
 			print('player X wins')
+			return True
 		elif win_cons[key] == grid_space_O:
 			print('player O wins')
+			return True
+		else:
+			return False
 
 def validate_selection(player_selection):
-	#validation statuses are assumed to be False unless proven to be true
+	#validation statuses are assumed to be False unless proven to be True
 	validation_status = [False, False]
 
 	#checks if the value is numeric
@@ -111,13 +141,74 @@ def validate_selection(player_selection):
 	if all(validation_status) == True:
 		return True
 
-#TESTING
-#this test should exercise the code's ability to assess whether or not a player's symbols match any win-condition patterns
-grid_selection = ['X','X','X',' ',' ',' ',' ',' ',' ']
-check_win(grid_selection)
-grid_selection = ['O',' ',' ',' ','O',' ',' ',' ','O']
-check_win(grid_selection)
+#NEED TO ADD THIS VALIDATION TO THE PLAYER_INPUT() FUNCTION
+def validate_gridspace(player_selection, grid_selection):
+	#validation status is assumed to be False unless proven to be True
+	validation_status = False
 
+	# #checks if the player's selection is occupied by another symbol
+	# if grid_selection[player_selection] == ' ':
+	# 	validation_status = True
+	# elif grid_selection[player_selection] == 'X' or grid_selection[player_selection] == 'O':
+	# 	validation_status = False
+
+#========================================================================================================
+#game loop
+#========================================================================================================
+#this portion of code is the game loop. it calls in functions as-needed until the game is over.
+print('Welcome to Tic-Tac-Toe!')
+time.sleep(2)
+print('This game is best played using a numpad')
+time.sleep(2)
+print('Each player inputs a number using this schema:')
+print_board(grid_demo)
+time.sleep(2)
+print('Players should announce if they are Player 1 or 2')
+
+#the ready and game statuses are intialized as False
+player_ready = False
+game_over = False
+
+#this control flow waits for the players to 'ready-up'
+while player_ready == False:
+	ready_status = input('Have you decided? (Y/N) ')
+	if ready_status == 'Y':
+		player_ready = True
+	elif ready_status == 'N':
+		player_status = False
+	else:
+		player_status = False
+		print('Read the prompt you Donkey')
+
+first_player = player_selector()
+print(f'Player {first_player} goes first and will use "X"')
+
+# while game_over == False:
+# 	if check_win(grid_selection) == False and check_full(grid_selection) == False:
+# 		game_over == False
+# 		selection = player_input()
+
+
+#========================================================================================================
+#testing
+#========================================================================================================
+#this test should roll a virtual d20 then choose a player
+# player_selector()
+
+# this test should exercise the code's ability to assess whether or not a player's selection conflicts with the current board
+# player_selection = 0
+# grid_selection = ['X']
+# validate_gridspace(player_selection, grid_selection)
+# grid_selection = ['O']
+# validate_gridspace(player_selection, grid_selection)
+# grid_selection = [' ']
+# validate_gridspace(player_selection, grid_selection)
+
+# #this test should exercise the code's ability to assess whether or not a player's symbols match any win-condition patterns
+# grid_selection = ['X','X','X',' ',' ',' ',' ',' ',' ']
+# check_win(grid_selection)
+# grid_selection = ['O',' ',' ',' ','O',' ',' ',' ','O']
+# check_win(grid_selection)
 
 #this test should exercise the ability of the code to assess whether or not the board is fully populated
 #expected output here is False

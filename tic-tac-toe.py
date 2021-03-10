@@ -12,6 +12,7 @@ import time
 #initialize grid variables
 grid_demo = ['1','2','3','4','5','6','7','8','9']
 grid_selection = [' ',' ',' ',' ',' ',' ',' ',' ',' ']
+player_symbol = ['X','O']
 
 #========================================================================================================
 #functions
@@ -43,17 +44,24 @@ def player_selector():
 	elif dice_roll > 10:
 		return 2 
 
-def player_input():
+def player_input(grid_selection):
 	#selection status is assumed to be false unless the validation function passes the user selection
 	selection_status = False
 	while selection_status == False:
 		#this loop executes until the selection is recognized as valid
 		player_selection = input("Enter your selection (numeric value in the range [1,9]): ")
 		selection_status = validate_selection(player_selection)
+		
+		#if the input is valid then the code needs to verify that the grid space is not already occupied
+		if selection_status == True:
+			player_selection = int(player_selection)
+			selection_status = validate_gridspace(player_selection, grid_selection)
+		elif selection_status == False:
+			pass
 
 		#if the input is valid then this function returns the input an integer
 		if selection_status == True:
-			return int(player_selection)
+			return player_selection
 		#otherwise it ignores the input an the while loop starts again	
 		elif selection_status == False:
 			pass
@@ -70,8 +78,10 @@ def check_full(grid_selection):
 			return False
 
 		if symbol_count == 9:
+			print('The game is over')
 			return True
 
+#THIS NEEDS WORK
 def check_win(grid_selection):
 	#this is the dictionary of possible win conditions
 	#future consideration is to re-write this as a tuple so that it is treated as immutable
@@ -88,33 +98,37 @@ def check_win(grid_selection):
 
 	#empty arrays that will individually represent a player
 	#these will form patters that can be compared to the win_con dictionary
-	grid_space_X = []
-	grid_space_O = []
-	grid_space_index = 0
+	win_count_X = 0
+	win_count_O = 0
 
-	#this builds the arrays of patterns that will be checked against the win_con dictionary
+	#this checks if any of the symbols match the win condition pattern
 	#an asterisk represents an arbitary symbol so that pattern matching is simpler
-	for grid_space in grid_selection:
-		if grid_space == 'X':
-			grid_space_X.append('*')
-		elif grid_space == 'O':
-			grid_space_O.append('*')
-		elif grid_space == ' ':
-			grid_space_X.append(' ')
-			grid_space_O.append(' ') 
-
-		grid_space_index += 1
-
-	#this control flow is responsible for checking the 'X' and 'Y' patterns against the win_con dictionary
 	for key in win_cons:
-		if win_cons[key] == grid_space_X:
-			print('player X wins')
+		
+		#zips the current board together with a win condition for comparison
+		comparison_list = list(zip(win_cons[key], grid_selection))
+
+		#for every pair that is valid the win count is increased by 1
+		for symbol_pair in comparison_list:
+			if symbol_pair[0] == '*' and symbol_pair[1] == 'X':
+				win_count_X += 1
+			elif symbol_pair[0] == '*' and symbol_pair[1] == 'O':
+				win_count_O += 1
+
+		#a win count of 3 wins the game
+		if win_count_X == 3:
+			print('Player 1 won')
 			return True
-		elif win_cons[key] == grid_space_O:
-			print('player O wins')
+			break
+		elif win_count_O == 3:
+			print('Player 2 won')
 			return True
-		else:
-			return False
+			break
+		elif win_count_X != 3 and win_count_O != 3:
+			win_count_X = win_count_O = 0 
+
+	#this returns false by default
+	return False
 
 def validate_selection(player_selection):
 	#validation statuses are assumed to be False unless proven to be True
@@ -141,29 +155,31 @@ def validate_selection(player_selection):
 	if all(validation_status) == True:
 		return True
 
-#NEED TO ADD THIS VALIDATION TO THE PLAYER_INPUT() FUNCTION
 def validate_gridspace(player_selection, grid_selection):
 	#validation status is assumed to be False unless proven to be True
 	validation_status = False
 
-	# #checks if the player's selection is occupied by another symbol
-	# if grid_selection[player_selection] == ' ':
-	# 	validation_status = True
-	# elif grid_selection[player_selection] == 'X' or grid_selection[player_selection] == 'O':
-	# 	validation_status = False
+	#checks if the player's selection is occupied by another symbol
+	if grid_selection[player_selection - 1] == ' ':
+		validation_status = True
+		return True
+	elif grid_selection[player_selection - 1] == 'X' or grid_selection[player_selection - 1] == 'O':
+		print('That space is taken you Donkey')
+		validation_status = False
+		return False
 
 #========================================================================================================
 #game loop
 #========================================================================================================
-#this portion of code is the game loop. it calls in functions as-needed until the game is over.
-print('Welcome to Tic-Tac-Toe!')
-time.sleep(2)
-print('This game is best played using a numpad')
-time.sleep(2)
-print('Each player inputs a number using this schema:')
-print_board(grid_demo)
-time.sleep(2)
-print('Players should announce if they are Player 1 or 2')
+# #this portion of code is the game loop. it calls in functions as-needed until the game is over.
+# print('Welcome to Tic-Tac-Toe!')
+# time.sleep(2)
+# print('This game is best played using a numpad')
+# time.sleep(2)
+# print('Each player inputs a number using this schema:')
+# print_board(grid_demo)
+# time.sleep(2)
+# print('Players should announce if they are Player 1 or 2')
 
 #the ready and game statuses are intialized as False
 player_ready = False
@@ -181,13 +197,22 @@ while player_ready == False:
 		print('Read the prompt you Donkey')
 
 first_player = player_selector()
-print(f'Player {first_player} goes first and will use "X"')
+print(f'Player {first_player} goes first and will use "{player_symbol[first_player - 1]}"')
 
-# while game_over == False:
-# 	if check_win(grid_selection) == False and check_full(grid_selection) == False:
-# 		game_over == False
-# 		selection = player_input()
+while game_over == False:
+	if check_win(grid_selection) == False and check_full(grid_selection) == False:
+		game_over == False
+		player_selection = player_input(grid_selection)
+		
+		#THIS IS WHERE THE SYMBOL SELECTOR CODE WILL GO
+		grid_selection[player_selection - 1] = 'X'
+		#----------------------------------------------
+		
+		print_board(grid_selection)
 
+	#THERE IS SOMETHING WRONG HERE THAT CAUSES IT TO PRINT THE WINNER INFINITELY
+	elif check_win(grid_selection) == True or check_full(grid_selection) == True:
+		game_over == True
 
 #========================================================================================================
 #testing
@@ -204,10 +229,10 @@ print(f'Player {first_player} goes first and will use "X"')
 # grid_selection = [' ']
 # validate_gridspace(player_selection, grid_selection)
 
-# #this test should exercise the code's ability to assess whether or not a player's symbols match any win-condition patterns
+#this test should exercise the code's ability to assess whether or not a player's symbols match any win-condition patterns
 # grid_selection = ['X','X','X',' ',' ',' ',' ',' ',' ']
 # check_win(grid_selection)
-# grid_selection = ['O',' ',' ',' ','O',' ',' ',' ','O']
+# grid_selection = ['O',' ',' ',' ','O',' ','O',' ','O']
 # check_win(grid_selection)
 
 #this test should exercise the ability of the code to assess whether or not the board is fully populated

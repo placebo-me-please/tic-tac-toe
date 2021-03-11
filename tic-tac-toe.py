@@ -9,7 +9,7 @@ os.system('clear')
 from random import randint		#built-in random integer generator
 import time
 
-#initialize grid variables
+#initialize grid and player variables
 grid_demo = ['1','2','3','4','5','6','7','8','9']
 grid_selection = [' ',' ',' ',' ',' ',' ',' ',' ',' ']
 player_symbol = ['X','O']
@@ -43,6 +43,19 @@ def player_selector():
 		return 1
 	elif dice_roll > 10:
 		return 2 
+
+def player_delay():
+	player_ready = False
+	#this control flow waits for the players to 'ready-up'
+	while player_ready == False:
+		ready_status = input('Have you decided? (Y/N) ').upper()
+		if ready_status == 'Y':
+			player_ready = True
+		elif ready_status == 'N':
+			player_status = False
+		else:
+			player_status = False
+			print('Read the prompt you Donkey')
 
 def player_input(grid_selection):
 	#selection status is assumed to be false unless the validation function passes the user selection
@@ -78,7 +91,6 @@ def check_full(grid_selection):
 			return False
 
 		if symbol_count == 9:
-			print('The game is over')
 			return True
 
 #THIS NEEDS WORK
@@ -115,20 +127,18 @@ def check_win(grid_selection):
 			elif symbol_pair[0] == '*' and symbol_pair[1] == 'O':
 				win_count_O += 1
 
-		#a win count of 3 wins the game
+		#any player with a count of 3 wins the game
+		#THERE IS SOMETHING WRONG HERE THAT CAUSES IT TO PRINT THE WINNER INFINITELY
 		if win_count_X == 3:
-			print('Player 1 won')
-			return True
-			break
+			return 1
 		elif win_count_O == 3:
-			print('Player 2 won')
-			return True
-			break
+			return 2
 		elif win_count_X != 3 and win_count_O != 3:
 			win_count_X = win_count_O = 0 
 
-	#this returns false by default
-	return False
+	#this returns false if neither player won
+	if win_count_X == 0 and win_count_O == 0:
+		return False
 
 def validate_selection(player_selection):
 	#validation statuses are assumed to be False unless proven to be True
@@ -171,49 +181,48 @@ def validate_gridspace(player_selection, grid_selection):
 #========================================================================================================
 #game loop
 #========================================================================================================
-# #this portion of code is the game loop. it calls in functions as-needed until the game is over.
-# print('Welcome to Tic-Tac-Toe!')
-# time.sleep(2)
-# print('This game is best played using a numpad')
-# time.sleep(2)
-# print('Each player inputs a number using this schema:')
-# print_board(grid_demo)
-# time.sleep(2)
-# print('Players should announce if they are Player 1 or 2')
+#this portion of code is the game loop. it calls in functions as-needed until the game is over.
+print('Welcome to Tic-Tac-Toe!')
+time.sleep(2)
+print('This game is best played using a numpad')
+time.sleep(2)
+print('Each player inputs a number using this schema:')
+print_board(grid_demo)
+time.sleep(2)
+print('Players should announce if they are Player 1 or 2')
 
-#the ready and game statuses are intialized as False
-player_ready = False
+#the game status is intialized as False
 game_over = False
+player_1 = 1
+player_2 = 0
 
-#this control flow waits for the players to 'ready-up'
-while player_ready == False:
-	ready_status = input('Have you decided? (Y/N) ')
-	if ready_status == 'Y':
-		player_ready = True
-	elif ready_status == 'N':
-		player_status = False
-	else:
-		player_status = False
-		print('Read the prompt you Donkey')
-
-first_player = player_selector()
-print(f'Player {first_player} goes first and will use "{player_symbol[first_player - 1]}"')
+player_delay()
+active_player= player_selector()
+print(f'Player {active_player} goes first and will use "{player_symbol[active_player - 1]}"')
 
 while game_over == False:
+	
+	player_selection = player_input(grid_selection)
+
+	if active_player - 1 == 0:
+		grid_selection[player_selection - 1] = player_symbol[0]
+		active_player += 1
+	elif active_player - 1 == 1:
+		grid_selection[player_selection - 1] = player_symbol[1]
+		active_player -= 1
+	
+	print_board(grid_selection)
+
 	if check_win(grid_selection) == False and check_full(grid_selection) == False:
-		game_over == False
-		player_selection = player_input(grid_selection)
-		
-		#THIS IS WHERE THE SYMBOL SELECTOR CODE WILL GO
-		grid_selection[player_selection - 1] = 'X'
-		#----------------------------------------------
-		
-		print_board(grid_selection)
+		game_over = False
+	elif check_win(grid_selection) != False:
+		game_over = True
+		print(f'Player {check_win(grid_selection)} won the game')
+	elif check_full(grid_selection) == True:
+		print('The board is full and the game is over')
+		game_over = True
 
-	#THERE IS SOMETHING WRONG HERE THAT CAUSES IT TO PRINT THE WINNER INFINITELY
-	elif check_win(grid_selection) == True or check_full(grid_selection) == True:
-		game_over == True
-
+print('Thanks for playing!')
 #========================================================================================================
 #testing
 #========================================================================================================
